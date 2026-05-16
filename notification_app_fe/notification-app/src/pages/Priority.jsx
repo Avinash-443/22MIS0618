@@ -1,105 +1,90 @@
 import axios from "axios";
 
 import {
-useEffect,
-useState
-}
-from "react";
+    useEffect,
+    useState
+} from "react";
 
 import NotificationCard
 from "../components/NotificationCard";
 
 
-function Priority(){
+function Priority() {
 
-const [notifications,
-setNotifications]
-=
-useState([]);
+    const [notifications, setNotifications] =
+    useState([]);
 
+    useEffect(() => {
 
-useEffect(()=>{
+        loadData();
 
-loadData();
-
-},[]);
+    }, []);
 
 
-async function loadData(){
+    async function loadData() {
 
-try{
+        try {
 
-const response=
+            const response =
+            await axios.get(
+                "http://4.224.186.213/evaluation-service/notifications?limit=3"
+            );
 
-await axios.get(
+            console.log(response.data);
 
-"http://4.224.186.213/evaluation-service/notifications?limit=3"
+            setNotifications(
 
-);
+                response.data.notifications ||
+                response.data ||
+                []
 
-console.log(
-response.data
-);
+            );
 
-setNotifications(
+        }
 
-response.data.notifications
-||
-response.data
-||
-[]
+        catch (error) {
 
-);
+            console.log(error);
 
-}
+        }
 
-catch(error){
-
-console.log(error);
-
-}
-
-}
+    }
 
 
-return(
+    return (
 
-<div>
+        <div>
 
-<h1>
+            <h1>
+                Priority Notifications
+            </h1>
 
-Priority Notifications
+            {
 
-</h1>
+                notifications.length > 0
 
+                ?
 
-{
+                notifications.map((item) => (
 
-notifications.length>0
+                    <NotificationCard
+                        key={item.id}
+                        data={item}
+                    />
 
-?
+                ))
 
-notifications.map((item)=>(
+                :
 
-<NotificationCard
+                <h3>
+                    No Notifications Found
+                </h3>
 
-key={item.id}
+            }
 
-data={item}
+        </div>
 
-/>
-
-))
-
-:
-
-<h3>No Notifications Found</h3>
-
-}
-
-</div>
-
-)
+    );
 
 }
 

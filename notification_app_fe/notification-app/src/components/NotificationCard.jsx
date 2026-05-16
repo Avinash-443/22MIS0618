@@ -1,69 +1,72 @@
 import {
-Card,
-CardContent,
-Typography
+    Card,
+    CardContent,
+    Typography
 }
 from "@mui/material";
 
-function NotificationCard({data}){
 
-return(
+function NotificationCard({ data }) {
 
-<Card
+    return (
 
-style={{
+        <Card
 
-marginBottom:"20px",
+            style={{
 
-backgroundColor:
-data?.read
-?
-"#eeeeee"
-:
-"#d4ffd4"
+                marginBottom: "20px",
 
-}}
+                backgroundColor:
+                data?.read
+                ?
+                "#eeeeee"
+                :
+                "#d4ffd4"
 
->
+            }}
 
-<CardContent>
+        >
 
-<Typography
-variant="h6"
->
+            <CardContent>
 
-{data?.message || "No Message"}
+                <Typography
+                    variant="h6"
+                >
 
-</Typography>
+                    {data?.message || "No Message"}
 
-
-<Typography>
-
-Type:
-{data?.type || "Unknown"}
-
-</Typography>
+                </Typography>
 
 
-<Typography>
+                <Typography>
 
-Status:
+                    Type:
+                    {" "}
+                    {data?.type || "Unknown"}
 
-{
-data?.read
-?
-"Viewed"
-:
-"New Notification"
-}
+                </Typography>
 
-</Typography>
 
-</CardContent>
+                <Typography>
 
-</Card>
+                    Status:
+                    {" "}
 
-)
+                    {
+                        data?.read
+                        ?
+                        "Viewed"
+                        :
+                        "New Notification"
+                    }
+
+                </Typography>
+
+            </CardContent>
+
+        </Card>
+
+    );
 
 }
 
