@@ -224,7 +224,170 @@ db.notification.deleteOne(
 
 
 
+# Stage 3
+
+## Is the query accurate?
+
+Query:
+
+```sql
+SELECT notifications
+WHERE studentID = 1042
+AND isRead = false
+ORDER BY createdAt ASC;
+```
+
+The above query is functionally correct because it also returns all of the unread notifications also for a student.
+
+But it may because show when the table contains:
+
+    - 50, 000 students
+    - 5,000,000 notifications
+
+
+
+## Why is this slow?
+
+Reasons: 
+
+1. Full table scan may happen so database checks many rows before finding matching records.
+
+2. Select * fetches all of the columns.  It can also load some unnecessary data.
+
+3. Sorting operation
+
+```sql
+ORDER BY createdAt
+```
+
+Sorting a large amount of data increases time.
+
+
+## Improved Query
+
+```sql
+SELECT
+notificationID, title, message, createdAt
+FROM notifications
+WHERE studentID = 1042
+AND isRead = false
+ORDER BY createdAt DESC;
+```
+
+# Stage 4
+
+## Problem
+
+Notifications are need to feteched from the database every time a student opens the page.
+
+Problems:
+
+    - Too many database request
+    - Increased response time
+    - Higher server load
+    - Poor user experience
+
+
+## Solution 1: Caching
+
+Store frequently accesed notification in the Redis (Cache memory)
+
+Flow:
+    1. User requests notifications
+    2. Check cache first
+    3. If data exists -> return data
+    4. Otherwise fetch from DB
+    5. Store result in cache
+
+Advantage:
+
+    - We will have faster response time
+    - Reduce DB load
+    - Better performance
+
+TradeOffs:
+    - Additional memory is required
+    - Catahed data may become outdated
+
+
+
+## Solution 2: Pagination
+
+Instead of loading all notifications: Load only small data sets at a time.
+
+Example: /notifications?page=1&limit=10
+
+Advantage:
+    - less data transfer
+    - Faster loading
+    - Better user experience
+
+Tradeoffs:
+    -Requires multiple requests for additional pages
 
 
 
 
+# Stage 5
+
+## Problems in current implementation
+
+1. Notifications are sent one by one, so it becomes slow for 50,000 users.
+
+2. If email fails for some students, the process becomes inconsistent.
+
+3. No retry mechanism for failed notifications.
+
+4. Email, database save, and app notifications are tightly coupled.
+
+---
+
+## If email fails for 200 students
+
+Some students receive notifications while some do not. Failed notifications should be retried automatically.
+
+---
+
+## Revised Pseudocode
+
+```python
+function notify_all(student_ids, message):
+
+    notificationId = save_to_db(message)
+
+    for student_id in student_ids:
+
+        add_to_queue(student_id, notificationId)
+
+
+worker():
+
+    task = get_task()
+
+    try:
+
+        send_email(task.student_id)
+
+        push_to_app(task.student_id)
+
+    catch error:
+
+        retry_task()
+```
+
+---
+
+## Should DB save and email happen together?
+
+No.
+
+Database save should happen first and email should be processed separately because email may fail.
+
+---
+
+## Benefits
+
+- Faster processing
+- Retry mechanism
+- Better reliability
+- Handles large number of users
