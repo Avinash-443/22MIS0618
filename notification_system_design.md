@@ -101,3 +101,130 @@ Response:
 
 
 
+
+# Stage 2
+
+## Database Choice
+
+Reason:
+    - Unpredictable notification 
+    - Can change structure at any time
+    - JSON format storage provides easy access
+    - Faster for large notification data
+    - Easy Scaling
+
+## Database Schema
+
+Colletion Name: notifications
+
+Schema:
+
+{
+    "_id": 1,
+    "userId": 101,
+    "title":"New message",
+    "message":"You have received a message",
+    "read": false,
+    "createdAt": "16/05/2026"
+}
+
+## Problem when data volumn increases
+
+### 1. Decrease query performance
+
+Problem:  When more request are made to the database it may slow the query performance because of large number of notifications can make searching slow.
+
+Solution: Creating indexes can solve some problems.  Frequently used or commonly used fields can have indexes to quickly identify the errors.
+
+db.notifications.createIndex(
+    {
+        userId: 1
+    }
+)
+
+### 2. Large unread notification list
+
+Problem: Too many notification with unread status that may cause the user to increase the loading time.
+
+Solution:  We can use pagination to load only the required or most resent once one by one without overloading the user side.
+
+Example:
+
+db.notifications.find(
+    {
+        userId:101
+    }
+)
+.limit(10)
+.skip(0)
+
+
+### 3. Database storage increases
+
+Problem:  Old notification keeping for a long time may require more storage to store everything.
+
+Solution: Delete the old notifications periodically.
+
+Example:
+
+db.notifications.deleteMany(
+    {
+        createdAt:
+        {
+            $lt: "2025-01-01"
+        }
+    }
+)
+
+## Queries for APIs from Stage 1
+
+### Create Notification
+
+db.notifications.insertOne(
+    {
+        userId: 101,
+        title: "New Message",
+        read: false
+    }
+)
+
+
+### Get All Notifications
+
+db.notification.find(
+    {
+        userId: 101
+    }
+)
+
+
+
+### Get Notification by ID
+
+db.notifications.updateOne({
+    _id: "1"
+},
+{
+    $set:
+    {
+        read: true
+    }
+})
+
+
+### Delete Notification
+
+db.notification.deleteOne(
+    {
+        _id:"1"
+    }
+)
+
+
+
+
+
+
+
+
+
